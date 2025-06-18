@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:todo_app/todo.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp( MaterialApp(
@@ -15,12 +16,36 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  SharedPreferences? _prefs;
 
   TodoList tasks = TodoList([
     Task('Phase 1', false),
     Task('HW', false),
     Task('HW2', false)
   ]);
+
+  @override
+  void initState(){
+    super.initState();
+    _getPrefs();
+  }
+
+  void _initPrefs() async{
+    _prefs = await SharedPreferences.getInstance();
+    _setPrefs();
+  }
+
+  void _setPrefs(){
+    _prefs?.setStringList('tasksTitle', tasks.getTasksTitle());
+  }
+
+  void _getPrefs(){
+    setState(() {
+      List<String> taskTitles = _prefs?.getStringList('tasksTitle') ?? [];
+    tasks.clear();
+    [for( var title in taskTitles) tasks.addTask(title)];
+    });
+  }
 
   void _showDialog(){
     TextEditingController _textController = TextEditingController();
@@ -43,10 +68,11 @@ class _HomeState extends State<Home> {
               ),
             TextButton(
               onPressed: (){
-                String taskName = _textController.text.trim();
-              if (taskName.isNotEmpty) {
+                String taskTitle = _textController.text.trim();
+              if (taskTitle.isNotEmpty) {
                 setState(() {
-                  tasks.addTask(Task(taskName, false));
+                  tasks.addTask(Task(taskTitle, false));
+                  _setPrefs();
                 });
               }
               Navigator.of(context).pop();
@@ -90,10 +116,11 @@ class _HomeState extends State<Home> {
       onDismissed: (direction) {
         setState(() {
           tasks.removeTask(index);
+          _setPrefs();
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${tasks.getTaskName(index)} deleted')),
+          SnackBar(content: Text('${tasks.getTaskTitle(index)} deleted')),
         );
       },
       background: Container(
@@ -111,7 +138,7 @@ class _HomeState extends State<Home> {
             padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
             margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
             child: CheckboxListTile(
-              title: Text(tasks.getTaskName(index), style: TextStyle(
+              title: Text(tasks.getTaskTitle(index), style: TextStyle(
                 decoration: tasks.getTaskStatus(index)
                 ? TextDecoration.lineThrough
                 : TextDecoration.none

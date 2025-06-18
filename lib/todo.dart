@@ -3,10 +3,10 @@ void main(){
 }
 
 class Task{
-  String taskName;
+  String taskTitle;
   bool isChecked = false;
 
-  Task(String this.taskName, bool this.isChecked);
+  Task(String this.taskTitle, bool this.isChecked);
 
   void toggleIsChecked(){
     isChecked = !isChecked;
@@ -22,8 +22,8 @@ class TodoList{
     return tasks[index];
   }
 
-  String getTaskName(int index){
-    return tasks[index].taskName;
+  String getTaskTitle(int index){
+    return tasks[index].taskTitle;
   }
 
   bool getTaskStatus(int index){
@@ -39,8 +39,8 @@ class TodoList{
     }
   }
 
-  List<String> getTasksList(){
-    return [for (Task task in tasks) task.taskName];
+  List<String> getTasksTitle(){
+    return [for (Task task in tasks) task.taskTitle];
   }
 
 
@@ -48,5 +48,9 @@ class TodoList{
 
   void removeTask(int index){
     tasks.removeAt(index);
+  }
+
+  void clear(){
+    tasks.clear();
   }
 }
