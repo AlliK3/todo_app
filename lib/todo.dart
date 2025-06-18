@@ -36,6 +36,7 @@ class TodoList{
     }
     else if(value is String){
       tasks.add(Task(value, false));
+      print('Here');
     }
   }
 

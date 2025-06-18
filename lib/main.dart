@@ -27,24 +27,27 @@ class _HomeState extends State<Home> {
   @override
   void initState(){
     super.initState();
-    _getPrefs();
+    _initPrefs();
   }
 
   void _initPrefs() async{
     _prefs = await SharedPreferences.getInstance();
-    _setPrefs();
+    _getPrefs();
   }
 
   void _setPrefs(){
     _prefs?.setStringList('tasksTitle', tasks.getTasksTitle());
+    var t = tasks.getTasksTitle();
   }
 
   void _getPrefs(){
     setState(() {
       List<String> taskTitles = _prefs?.getStringList('tasksTitle') ?? [];
     tasks.clear();
-    [for( var title in taskTitles) tasks.addTask(title)];
-    });
+    for(String title in taskTitles){
+      print(title);
+      tasks.addTask(title);
+    }});
   }
 
   void _showDialog(){
