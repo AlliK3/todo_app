@@ -39,6 +39,11 @@ class TodoList{
     }
   }
 
+  List<String> getTasksList(){
+    return [for (Task task in tasks) task.taskName];
+  }
+
+
   int length(){ return tasks.length;}
 
   void removeTask(int index){
