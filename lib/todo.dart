@@ -1,16 +1,28 @@
+import 'dart:convert';
+
 void main(){
   
 }
 
 class Task{
-  String taskTitle;
+  String title;
   bool isChecked = false;
 
-  Task(String this.taskTitle, bool this.isChecked);
+  Task(String this.title, bool this.isChecked);
 
   void toggleIsChecked(){
     isChecked = !isChecked;
   }
+
+  Map<String, dynamic> toJson() => {
+    'title': title,
+    'isChecked': isChecked,
+  };
+
+  factory Task.fromJson(Map<String, dynamic> json) => Task(
+    json['title'],
+    json['isChecked'],
+  );
 }
 
 class TodoList{
@@ -23,7 +35,7 @@ class TodoList{
   }
 
   String getTaskTitle(int index){
-    return tasks[index].taskTitle;
+    return tasks[index].title;
   }
 
   bool getTaskStatus(int index){
@@ -41,9 +53,8 @@ class TodoList{
   }
 
   List<String> getTasksTitle(){
-    return [for (Task task in tasks) task.taskTitle];
+    return [for (Task task in tasks) task.title];
   }
-
 
   int length(){ return tasks.length;}
 
@@ -54,4 +65,16 @@ class TodoList{
   void clear(){
     tasks.clear();
   }
+
+  String toJsonString() {
+  List<Map<String, dynamic>> taskMaps = tasks.map((task) => task.toJson()).toList();
+  return jsonEncode(taskMaps);
+  }
+
+  factory TodoList.fromJsonString(String jsonString) {
+  List<dynamic> taskList = jsonDecode(jsonString);
+  List<Task> taskObjects = taskList.map((e) => Task.fromJson(e)).toList();
+  return TodoList(taskObjects);
+  }
+
 }

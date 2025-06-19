@@ -36,18 +36,25 @@ class _HomeState extends State<Home> {
   }
 
   void _setPrefs(){
-    _prefs?.setStringList('tasksTitle', tasks.getTasksTitle());
-    var t = tasks.getTasksTitle();
+    _prefs?.setString('tasks', tasks.toJsonString());
+    //_prefs?.setStringList('tasksTitle', tasks.getTasksTitle());
   }
 
   void _getPrefs(){
-    setState(() {
+    /*setState(() {
       List<String> taskTitles = _prefs?.getStringList('tasksTitle') ?? [];
     tasks.clear();
     for(String title in taskTitles){
       print(title);
       tasks.addTask(title);
-    }});
+    }});*/
+
+    setState(() {
+      String? jsonString = _prefs?.getString('tasks');
+    if (jsonString != null) {
+      tasks = TodoList.fromJsonString(jsonString);
+    }
+    });
   }
 
   void _showDialog(){
