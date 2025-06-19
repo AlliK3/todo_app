@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:todo_app/task.dart';
 import 'package:todo_app/todo.dart';
@@ -37,23 +39,16 @@ class _HomeState extends State<Home> {
   }
 
   void _setPrefs(){
-    _prefs?.setString('tasks', tasks.toJsonString());
-    //_prefs?.setStringList('tasksTitle', tasks.getTasksTitle());
+    String jsonString = jsonEncode(tasks.toJson());
+    _prefs?.setString('tasks', jsonString);
   }
 
   void _getPrefs(){
-    /*setState(() {
-      List<String> taskTitles = _prefs?.getStringList('tasksTitle') ?? [];
-    tasks.clear();
-    for(String title in taskTitles){
-      print(title);
-      tasks.addTask(title);
-    }});*/
-
     setState(() {
       String? jsonString = _prefs?.getString('tasks');
     if (jsonString != null) {
-      tasks = TodoList.fromJsonString(jsonString);
+      Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+      tasks = TodoList.fromJson(jsonMap);
     }
     });
   }

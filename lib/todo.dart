@@ -1,6 +1,9 @@
-import 'dart:convert';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:todo_app/task.dart';
  
+part 'todo.g.dart';
+
+@JsonSerializable()
 class TodoList{
   List<Task> tasks;
 
@@ -24,7 +27,6 @@ class TodoList{
     }
     else if(value is String){
       tasks.add(Task(value, false));
-      print('Here');
     }
   }
 
@@ -42,15 +44,8 @@ class TodoList{
     tasks.clear();
   }
 
-  String toJsonString() {
-  List<Map<String, dynamic>> taskMaps = tasks.map((task) => task.toJson()).toList();
-  return jsonEncode(taskMaps);
-  }
+  factory TodoList.fromJson(Map<String, dynamic> json) => _$TodoListFromJson(json);
 
-  factory TodoList.fromJsonString(String jsonString) {
-  List<dynamic> taskList = jsonDecode(jsonString);
-  List<Task> taskObjects = taskList.map((e) => Task.fromJson(e)).toList();
-  return TodoList(taskObjects);
-  }
+  Map<String, dynamic> toJson() => _$TodoListToJson(this);
 
 }
