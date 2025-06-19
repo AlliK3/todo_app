@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo_app/task.dart';
 import 'package:todo_app/todo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -158,6 +159,7 @@ class _HomeState extends State<Home> {
               onChanged: (newValue){
                 setState(() {
                   tasks.getTask(index).toggleIsChecked();
+                  _setPrefs();
                 });
               },
             ),

@@ -1,30 +1,6 @@
 import 'dart:convert';
-
-void main(){
-  
-}
-
-class Task{
-  String title;
-  bool isChecked = false;
-
-  Task(String this.title, bool this.isChecked);
-
-  void toggleIsChecked(){
-    isChecked = !isChecked;
-  }
-
-  Map<String, dynamic> toJson() => {
-    'title': title,
-    'isChecked': isChecked,
-  };
-
-  factory Task.fromJson(Map<String, dynamic> json) => Task(
-    json['title'],
-    json['isChecked'],
-  );
-}
-
+import 'package:todo_app/task.dart';
+ 
 class TodoList{
   List<Task> tasks;
 
