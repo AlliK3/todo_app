@@ -1,0 +1,142 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:todo_app/task.dart';
+import 'package:todo_app/todo.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:todo_app/task_dialog.dart';
+
+
+class Home extends StatefulWidget {
+  Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  SharedPreferences? _prefs;
+
+  TodoList tasks = TodoList([
+    Task('Phase 1', false),
+    Task('HW', false),
+    Task('HW2', false)
+  ]);
+
+  @override
+  void initState(){
+    super.initState();
+    _initPrefs();
+  }
+
+  void _initPrefs() async{
+    _prefs = await SharedPreferences.getInstance();
+    _getPrefs();
+  }
+
+  void _setPrefs(){
+    String jsonString = jsonEncode(tasks.toJson());
+    _prefs?.setString('tasks', jsonString);
+  }
+
+  void _getPrefs(){
+    setState(() {
+      String? jsonString = _prefs?.getString('tasks');
+    if (jsonString != null) {
+      Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+      tasks = TodoList.fromJson(jsonMap);
+    }
+    });
+  }
+
+  void _showDialog(){
+
+    showDialog(
+      context: context,
+      builder: (context) => TaskDialog(
+        onTaskAdded: (taskTitle){
+          setState(() {
+            tasks.addTask(taskTitle);
+            _setPrefs();
+          });
+        }
+      )
+    );
+  }
+
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Spartans Todo List"),
+        backgroundColor: Colors.green[700],
+        centerTitle: true,
+      ),
+      body:  tasks.length() == 0
+    ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'No tasks yet!\nTap + to add one.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+            ),
+          ],
+        ),
+      )
+    : ListView.builder(
+        itemCount: tasks.length(),
+        itemBuilder: (context, index){
+          return Dismissible(
+            key: UniqueKey(), 
+      direction: DismissDirection.endToStart,
+      onDismissed: (direction) {
+        setState(() {
+          tasks.removeTask(index);
+          _setPrefs();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${tasks.getTaskTitle(index)} deleted')),
+        );
+      },
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+            child: Container(
+            decoration: BoxDecoration(
+              color: Colors.green[200],
+              border: Border.all(width: 1.5),
+              borderRadius: BorderRadius.circular(12)
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+            margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+            child: CheckboxListTile(
+              title: Text(tasks.getTaskTitle(index), style: TextStyle(
+                decoration: tasks.getTaskStatus(index)
+                ? TextDecoration.lineThrough
+                : TextDecoration.none
+              ),),
+              value: tasks.getTaskStatus(index),
+              activeColor: Colors.green[700],
+              onChanged: (newValue){
+                setState(() {
+                  tasks.getTask(index).toggleIsChecked();
+                  _setPrefs();
+                });
+              },
+            ),
+          ),
+          );
+        }
+        ),
+        floatingActionButton: FloatingActionButton(
+        onPressed: _showDialog,
+        child: const Icon(Icons.add)),
+      );
+  }
+}
