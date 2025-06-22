@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:todo_app/task.dart';
 import 'package:todo_app/todo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+
 
 void main() {
   runApp( MaterialApp(
@@ -11,51 +13,44 @@ void main() {
   ));
 }
 
-class Home extends StatefulWidget {
+class Home extends HookWidget {
   Home({super.key});
-
+  
   @override
-  State<Home> createState() => _HomeState();
-}
+  Widget build(BuildContext context) {
 
-class _HomeState extends State<Home> {
-  SharedPreferences? _prefs;
+    final tasks = useState(
+      TodoList([
+        Task('Phase 1', false),
+        Task('HW', false),
+        Task('HW2', false),
+      ])
+      );
 
-  TodoList tasks = TodoList([
-    Task('Phase 1', false),
-    Task('HW', false),
-    Task('HW2', false)
-  ]);
+      useEffect(() {
+        Future<void> _initPrefs() async {
+          final prefs = await SharedPreferences.getInstance();
+          final jsonString = prefs.getString('tasks');
+          if (jsonString != null) {
+            final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+            tasks.value = TodoList.fromJson(jsonMap);
+          }
+        }
 
-  @override
-  void initState(){
-    super.initState();
-    _initPrefs();
-  }
+        _initPrefs();
 
-  void _initPrefs() async{
-    _prefs = await SharedPreferences.getInstance();
-    _getPrefs();
-  }
+        return null;
+      }, []);
 
-  void _setPrefs(){
-    String jsonString = jsonEncode(tasks.toJson());
-    _prefs?.setString('tasks', jsonString);
-  }
-
-  void _getPrefs(){
-    setState(() {
-      String? jsonString = _prefs?.getString('tasks');
-    if (jsonString != null) {
-      Map<String, dynamic> jsonMap = jsonDecode(jsonString);
-      tasks = TodoList.fromJson(jsonMap);
+    void _setPrefs() async {
+      final prefs = await SharedPreferences.getInstance();
+      String jsonString = jsonEncode(tasks.value.toJson());
+      prefs.setString('tasks', jsonString);
     }
-    });
-  }
 
-  void _showDialog(){
+    void _showDialog(){
     TextEditingController _textController = TextEditingController();
-
+  
     showDialog(
       context: context,
       builder: (context){
@@ -76,10 +71,8 @@ class _HomeState extends State<Home> {
               onPressed: (){
                 String taskTitle = _textController.text.trim();
               if (taskTitle.isNotEmpty) {
-                setState(() {
-                  tasks.addTask(Task(taskTitle, false));
+                  tasks.value = tasks.value.add(Task(taskTitle, false));
                   _setPrefs();
-                });
               }
               Navigator.of(context).pop();
               },
@@ -91,16 +84,13 @@ class _HomeState extends State<Home> {
     );
   }
 
-  
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Spartans Todo List"),
         backgroundColor: Colors.green[700],
         centerTitle: true,
       ),
-      body:  tasks.length() == 0
+      body:  tasks.value.length() == 0
     ? Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -114,20 +104,19 @@ class _HomeState extends State<Home> {
         ),
       )
     : ListView.builder(
-        itemCount: tasks.length(),
+        itemCount: tasks.value.length(),
         itemBuilder: (context, index){
           return Dismissible(
             key: UniqueKey(), 
       direction: DismissDirection.endToStart,
       onDismissed: (direction) {
-        setState(() {
-          tasks.removeTask(index);
+          final deletedTitle = tasks.value.getTaskTitle(index);
+          tasks.value = tasks.value.remove(index);
           _setPrefs();
-        });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${tasks.getTaskTitle(index)} deleted')),
-        );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$deletedTitle deleted')),
+          );
       },
       background: Container(
         color: Colors.red,
@@ -144,18 +133,16 @@ class _HomeState extends State<Home> {
             padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
             margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
             child: CheckboxListTile(
-              title: Text(tasks.getTaskTitle(index), style: TextStyle(
-                decoration: tasks.getTaskStatus(index)
+              title: Text(tasks.value.getTaskTitle(index), style: TextStyle(
+                decoration: tasks.value.getTaskStatus(index)
                 ? TextDecoration.lineThrough
                 : TextDecoration.none
               ),),
-              value: tasks.getTaskStatus(index),
+              value: tasks.value.getTaskStatus(index),
               activeColor: Colors.green[700],
               onChanged: (newValue){
-                setState(() {
-                  tasks.getTask(index).toggleIsChecked();
+                  tasks.value = tasks.value.toggle(index);
                   _setPrefs();
-                });
               },
             ),
           ),

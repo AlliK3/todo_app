@@ -16,4 +16,11 @@ class Task{
   factory Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);
 
   Map<String, dynamic> toJson() => _$TaskToJson(this);
+
+  Task copyWith({String? title, bool? isChecked}) {
+    return Task(
+      title ?? this.title,
+      isChecked ?? this.isChecked,
+    );
+  }
 }

@@ -4,48 +4,34 @@ import 'package:todo_app/task.dart';
 part 'todo.g.dart';
 
 @JsonSerializable()
-class TodoList{
-  List<Task> tasks;
+class TodoList {
+  final List<Task> tasks;
 
   TodoList(this.tasks);
 
-  Task getTask(int index){
-    return tasks[index];
-  }
-
-  String getTaskTitle(int index){
-    return tasks[index].title;
-  }
-
-  bool getTaskStatus(int index){
-    return tasks[index].isChecked;
-  }
-
-  void addTask(dynamic value){
-    if(value is Task){
-      tasks.add(value);
-    }
-    else if(value is String){
-      tasks.add(Task(value, false));
-    }
-  }
-
-  List<String> getTasksTitle(){
-    return [for (Task task in tasks) task.title];
-  }
-
-  int length(){ return tasks.length;}
-
-  void removeTask(int index){
-    tasks.removeAt(index);
-  }
-
-  void clear(){
-    tasks.clear();
-  }
-
   factory TodoList.fromJson(Map<String, dynamic> json) => _$TodoListFromJson(json);
-
   Map<String, dynamic> toJson() => _$TodoListToJson(this);
 
+  Task getTask(int index) => tasks[index];
+  String getTaskTitle(int index) => tasks[index].title;
+  bool getTaskStatus(int index) => tasks[index].isChecked;
+  List<String> getTasksTitle() => [for (Task task in tasks) task.title];
+  int length() => tasks.length;
+
+  TodoList add(Task task) => TodoList([...tasks, task]);
+
+  TodoList remove(int index) {
+    final newTasks = List<Task>.from(tasks)..removeAt(index);
+    return TodoList(newTasks);
+  }
+
+  TodoList clearAll() => TodoList([]);
+
+  TodoList toggle(int index) {
+  final updatedTasks = [...tasks];
+  updatedTasks[index] = tasks[index].copyWith(
+    isChecked: !tasks[index].isChecked,
+  );
+  return TodoList(updatedTasks);
+}
 }

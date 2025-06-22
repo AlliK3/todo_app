@@ -4,7 +4,7 @@
             "outputFile": "com.example.todo_app-mergeDebugResources-9:/values-night-v8/values-night-v8.xml",
             "map": [
                 {
-                    "source": "/Users/allik3/Desktop/Programming/flutterApps/todo_app/android/app/src/main/res/values-night/styles.xml",
+                    "source": "/Users/allik3/Desktop/Programming/flutterApps/todo_app/apps/todoapp/android/app/src/main/res/values-night/styles.xml",
                     "from": {
                         "startLines": "3,14",
                         "startColumns": "4,4",

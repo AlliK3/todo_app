@@ -1,0 +1,4 @@
+#Sun Jun 22 05:55:50 EDT 2025
+base.0=/Users/allik3/Desktop/Programming/flutterApps/todo_app/apps/todoapp/build/app/intermediates/dex/profile/mergeDexProfile/classes.dex
+path.0=classes.dex
+renamed.0=classes.dex
