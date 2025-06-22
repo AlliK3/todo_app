@@ -1,9 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:todo_app/task.dart';
 import 'package:todo_app/todo.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/task_dialog.dart';
+import 'package:todo_app/task_tile.dart';
+import 'package:todo_app/task_storage.dart';
+
+
 
 
 class Home extends StatefulWidget {
@@ -14,8 +16,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  SharedPreferences? _prefs;
 
+  final TaskStorage _storage = TaskStorage();
   TodoList tasks = TodoList([
     Task('Phase 1', false),
     Task('HW', false),
@@ -25,27 +27,18 @@ class _HomeState extends State<Home> {
   @override
   void initState(){
     super.initState();
-    _initPrefs();
+    _loadTasks();
   }
 
-  void _initPrefs() async{
-    _prefs = await SharedPreferences.getInstance();
-    _getPrefs();
-  }
-
-  void _setPrefs(){
-    String jsonString = jsonEncode(tasks.toJson());
-    _prefs?.setString('tasks', jsonString);
-  }
-
-  void _getPrefs(){
+  void _loadTasks() async {
+    final loadedTasks = await _storage.loadTasks();
     setState(() {
-      String? jsonString = _prefs?.getString('tasks');
-    if (jsonString != null) {
-      Map<String, dynamic> jsonMap = jsonDecode(jsonString);
-      tasks = TodoList.fromJson(jsonMap);
-    }
+      tasks = loadedTasks;
     });
+  }
+
+  void _saveTasks() {
+    _storage.saveTasks(tasks);
   }
 
   void _showDialog(){
@@ -56,7 +49,7 @@ class _HomeState extends State<Home> {
         onTaskAdded: (taskTitle){
           setState(() {
             tasks.addTask(taskTitle);
-            _setPrefs();
+            _saveTasks();
           });
         }
       )
@@ -88,49 +81,20 @@ class _HomeState extends State<Home> {
     : ListView.builder(
         itemCount: tasks.length(),
         itemBuilder: (context, index){
-          return Dismissible(
-            key: UniqueKey(), 
-      direction: DismissDirection.endToStart,
-      onDismissed: (direction) {
-        setState(() {
-          tasks.removeTask(index);
-          _setPrefs();
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${tasks.getTaskTitle(index)} deleted')),
-        );
-      },
-      background: Container(
-        color: Colors.red,
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: const Icon(Icons.delete, color: Colors.white),
-      ),
-            child: Container(
-            decoration: BoxDecoration(
-              color: Colors.green[200],
-              border: Border.all(width: 1.5),
-              borderRadius: BorderRadius.circular(12)
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-            margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-            child: CheckboxListTile(
-              title: Text(tasks.getTaskTitle(index), style: TextStyle(
-                decoration: tasks.getTaskStatus(index)
-                ? TextDecoration.lineThrough
-                : TextDecoration.none
-              ),),
-              value: tasks.getTaskStatus(index),
-              activeColor: Colors.green[700],
-              onChanged: (newValue){
-                setState(() {
-                  tasks.getTask(index).toggleIsChecked();
-                  _setPrefs();
-                });
-              },
-            ),
-          ),
+          return TaskTile(
+            task: tasks.getTask(index),
+            onDelete: () {
+              setState(() {
+                tasks.removeTask(index);
+                _saveTasks();
+              });
+            },
+            onToggle: () {
+              setState(() {
+                tasks.getTask(index).toggleIsChecked();
+                _saveTasks();
+              });
+            },
           );
         }
         ),
